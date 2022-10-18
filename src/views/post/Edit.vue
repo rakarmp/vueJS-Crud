@@ -4,10 +4,10 @@
             <div class="col-md-12">
                 <div class="card border-0 rounded shadow">
                     <div class="card-body">
-                        <h4>TAMBAH POST</h4>
+                        <h4>EDIT POST</h4>
                         <hr>
 
-                        <form @submit.prevent="store">
+                        <form @submit.prevent="update">
                             <div class="form-group">
                                 <label for="title" class="font-weight-bold">Title</label>
                                 <input type="text" class="form-control" v-model="post.title" placeholder="Masukkan Judul Post">
@@ -35,8 +35,8 @@
 </template>
 
 <script>
-import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { reactive, ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 
 export default {
@@ -55,13 +55,33 @@ export default {
         //vue router
         const router = useRouter()
 
-        //method store
-        function store() {
+        //vue router
+        const route = useRoute()
+
+        //mounted
+        onMounted(() => {
+
+            //get API from Laravel Backend
+            axios.get(`http://localhost:8000/api/post/${route.params.id}`)
+            .then(response => {
+              
+              //assign state posts with response data
+              post.title    = response.data.data.title  
+              post.content  = response.data.data.content  
+
+            }).catch(error => {
+                console.log(error.response.data)
+            })
+
+        })
+
+        //method update
+        function update() {
 
             let title   = post.title
             let content = post.content
 
-            axios.post('http://localhost:8000/api/post', {
+            axios.put(`http://localhost:8000/api/post/${route.params.id}`, {
                 title: title,
                 content: content
             }).then(() => {
@@ -83,7 +103,7 @@ export default {
             post,
             validation,
             router,
-            store
+            update
         }
 
     }
